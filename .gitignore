@@ -1,0 +1,26 @@
+# Build files
+build/
+.gradle/
+
+# IDE files
+.idea/
+*.iml
+.vscode/
+.settings/
+.classpath
+.project
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Data files (don't commit player data)
+playtime_data.json
+
+# Logs
+logs/
+*.log
+
+# Temporary files
+tmp/
+temp/

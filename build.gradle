@@ -1,0 +1,47 @@
+plugins {
+    id 'java'
+    id 'net.neoforged.gradle.userdev' version '7.0.172'
+}
+
+version = '1.0.0'
+group = 'com.dsword91.playtime'
+
+base {
+    archivesName = 'playtime'
+}
+
+java.toolchain.languageVersion = JavaLanguageVersion.of(21)
+
+// NeoForge 依赖
+dependencies {
+    implementation "net.neoforged:neoforge:21.1.65"
+}
+
+sourceSets.main.resources { srcDir 'src/main/resources' }
+
+tasks.withType(ProcessResources).configureEach {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    
+    var replaceProperties = [
+            minecraft_version   : '1.21.1',
+            minecraft_version_range: '[1.21.1,1.22)',
+            neo_version         : '21.1.65',
+            neo_version_range   : '[21.1.65,)',
+            loader_version_range: '[4,)',
+            mod_id              : 'playtime',
+            mod_name            : 'PlayTime',
+            mod_license         : 'MIT',
+            mod_version         : '1.0.0',
+            mod_authors         : 'DSword91',
+            mod_description     : 'A NeoForge 1.21.1 mod that tracks player active time (excluding AFK)'
+    ]
+    inputs.properties replaceProperties
+
+    filesMatching(['META-INF/neoforge.mods.toml']) {
+        expand replaceProperties + [project: project]
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+}

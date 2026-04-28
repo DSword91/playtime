@@ -1,0 +1,7 @@
+{
+  "apiPort": 25002,
+  "afkThresholdTicks": 100,
+  "movementThreshold": 0.1,
+  "saveInterval": 6000,
+  "apiKey": ""
+}
