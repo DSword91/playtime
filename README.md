@@ -1,65 +1,41 @@
-# PlayTime - NeoForge Player Active Time Tracker
+# PlayTime - 玩家活跃时间追踪模组
 
-A lightweight NeoForge 1.21.1 mod that tracks players' **active time** (excluding AFK/idle time).
+NeoForge 1.21.1 轻量级模组，追踪玩家**实际活跃时间**（自动排除挂机时间）。
 
-## Features
+## 功能
 
-- **Smart AFK Detection** - Only records time when players are actually active
-- **Multi-dimensional Activity Tracking**:
-  - Movement (position changes)
-  - Block interaction (placing/breaking)
-  - Item usage
-  - Combat (attacking/taking damage)
-  - Chat messages
-- **HTTP API** - RESTful API on port 25002 for external queries
-- **In-game Commands** - `/playtime` and `/playtime leaderboard`
-- **Data Persistence** - JSON file storage with auto-save every 5 minutes
+- **智能 AFK 检测** — 只记录玩家真正活跃的时间
+- **多维度活动追踪** — 移动、方块交互、物品使用、战斗、聊天
+- **HTTP API** — RESTful 接口（默认端口 25002），支持外部系统查询
+- **游戏内命令** — `/playtime` 查看时间，`/playtime leaderboard` 查看排行
+- **自动保存** — JSON 存储，每 5 分钟自动保存
 
-## Installation
+## 安装
 
-1. Install **NeoForge 1.21.1** on your server
-2. Download `playtime-1.0.0.jar` from [Releases](https://github.com/DSword91/playtime/releases)
-3. Place the JAR file in your server's `mods` folder
-4. Start the server
+1. 安装 **NeoForge 1.21.1**
+2. 从 [Releases](https://github.com/DSword91/playtime/releases) 下载 `playtime-1.0.0.jar`
+3. 放入服务器 `mods` 文件夹
+4. 启动服务器
 
-## Usage
-
-### In-game Commands
+## 使用
 
 ```bash
-/playtime                    # View your own active time
-/playtime <player>           # View a specific player's time
-/playtime leaderboard        # View top 10 leaderboard
-/playtime leaderboard 20     # View top 20
+/playtime                    # 查看自己的活跃时间
+/playtime <玩家名>           # 查看指定玩家
+/playtime leaderboard        # 查看前 10 名排行
+/playtime leaderboard 20     # 查看前 20 名
 ```
 
 ### HTTP API
 
 ```bash
-# Get leaderboard
 GET http://localhost:25002/playtime?top=10
-
-# Health check
 GET http://localhost:25002/health
 ```
 
-**Response Example:**
-```json
-{
-  "total_players": 50,
-  "leaderboard": [
-    {
-      "uuid": "550e8400-e29b-41d4-a716-446655440000",
-      "name": "Player1",
-      "play_minutes": 7230
-    }
-  ]
-}
-```
+## 配置
 
-## Configuration
-
-Config file is generated at `config/playtime_config.json`:
+配置文件位于 `config/playtime_config.json`：
 
 ```json
 {
@@ -71,7 +47,7 @@ Config file is generated at `config/playtime_config.json`:
 }
 ```
 
-## Build from Source
+## 从源码构建
 
 ```bash
 git clone https://github.com/DSword91/playtime.git
@@ -79,20 +55,16 @@ cd playtime
 ./gradlew build
 ```
 
-The JAR will be in `build/libs/playtime-1.0.0.jar`.
+生成的 JAR 在 `build/libs/playtime-1.0.0.jar`。
 
-## Performance
+## 性能
 
-- **CPU Usage**: < 0.5% (negligible)
-- **Memory Usage**: ~10-50 MB
-- **TPS Impact**: None
+- **CPU**: < 0.5%
+- **内存**: ~10-50 MB
+- **TPS**: 无影响
 
-The mod uses an event-driven architecture with minimal computation overhead.
-
-## License
+## 许可证
 
 MIT License
 
-## Author
-
-**DSword91**
+**作者**: DSword91
