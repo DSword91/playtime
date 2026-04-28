@@ -1,6 +1,7 @@
 # Build files
 build/
 .gradle/
+runs/
 
 # IDE files
 .idea/
@@ -15,7 +16,9 @@ build/
 Thumbs.db
 
 # Data files (don't commit player data)
+config/
 playtime_data.json
+playtime_tracker_config.json
 
 # Logs
 logs/
