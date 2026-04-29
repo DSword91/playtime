@@ -38,6 +38,7 @@ sourceSets.main.resources { srcDir 'src/main/resources' }
 processResources {
     inputs.property 'version', project.version
     inputs.property 'mcversion', '1.12.2'
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 
     from(sourceSets.main.resources.srcDirs) {
         include 'mcmod.info'
