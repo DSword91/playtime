@@ -120,7 +120,13 @@ public class HttpApiServer {
         String query = path.substring(queryStart + 1);
         for (String pair : query.split("&")) {
             String[] kv = pair.split("=");
-            if (kv.length == 2) params.put(kv[0], URLDecoder.decode(kv[1], "UTF-8"));
+            if (kv.length == 2) {
+                try {
+                    params.put(kv[0], URLDecoder.decode(kv[1], "UTF-8"));
+                } catch (java.io.UnsupportedEncodingException e) {
+                    params.put(kv[0], kv[1]);
+                }
+            }
         }
         return params;
     }

@@ -86,7 +86,6 @@ public class PlayTimeCommand extends CommandBase {
         return hours > 0 ? hours + "小时" + mins + "分" : mins + "分钟";
     }
 
-    @Override
     public List<String> addTabCompletionOptions(ICommandSender sender, String[] args) {
         net.minecraft.server.MinecraftServer server = net.minecraftforge.fml.common.FMLCommonHandler.instance().getMinecraftServerInstance();
         if (server == null) return new ArrayList<>();
