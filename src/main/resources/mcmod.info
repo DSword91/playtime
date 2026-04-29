@@ -1,0 +1,14 @@
+{
+  "modid": "playtime",
+  "name": "PlayTime",
+  "description": "A Forge 1.12.2 mod that tracks player active time (excluding AFK)",
+  "version": "${version}",
+  "mcversion": "${mcversion}",
+  "url": "",
+  "updateUrl": "",
+  "authorList": ["DSword91"],
+  "credits": "",
+  "logoFile": "",
+  "screenshots": [],
+  "dependencies": []
+}

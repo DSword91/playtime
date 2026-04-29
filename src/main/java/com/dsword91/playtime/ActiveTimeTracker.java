@@ -1,20 +1,18 @@
 package com.dsword91.playtime;
 
-import com.mojang.logging.LogUtils;
-import net.minecraft.server.level.ServerPlayer;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.event.tick.ServerTickEvent;
-import net.neoforged.neoforge.event.tick.PlayerTickEvent;
-import net.neoforged.neoforge.event.entity.player.*;
-import net.neoforged.neoforge.event.server.ServerStoppedEvent;
-import org.slf4j.Logger;
+import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.common.gameevent.PlayerEvent;
+import net.minecraftforge.fml.common.gameevent.TickEvent;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 
-@EventBusSubscriber(modid = PlayTimeMod.MOD_ID)
 public class ActiveTimeTracker {
-    private static final Logger LOGGER = LogUtils.getLogger();
+    private static final Logger LOGGER = LogManager.getLogger(ActiveTimeTracker.class);
     private static final Map<UUID, Long> playerLastActivity = new HashMap<>();
     private static final Map<UUID, double[]> playerLastPosition = new HashMap<>();
     private static final long AFK_THRESHOLD = 100;
@@ -23,13 +21,15 @@ public class ActiveTimeTracker {
     private static final long SAVE_INTERVAL = 6000;
 
     @SubscribeEvent
-    public static void onServerTick(ServerTickEvent.Post event) {
+    public void onServerTick(TickEvent.ServerTickEvent event) {
+        if (event.phase != TickEvent.Phase.END) return;
+        
         var server = event.getServer();
-        long currentTick = server.getTickCount();
+        long currentTick = server.getTickCounter();
 
-        for (ServerPlayer player : server.getPlayerList().getPlayers()) {
-            UUID uuid = player.getUUID();
-            String playerName = player.getName().getString();
+        for (EntityPlayerMP player : server.getPlayerList().getPlayers()) {
+            UUID uuid = player.getUniqueID();
+            String playerName = player.getName();
             PlayerActiveData data = DataManager.getInstance().getPlayerData(uuid.toString());
             data.setPlayerName(playerName);
 
@@ -50,79 +50,83 @@ public class ActiveTimeTracker {
     }
 
     @SubscribeEvent
-    public static void onPlayerTick(PlayerTickEvent.Post event) {
-        if (!(event.getEntity() instanceof ServerPlayer player)) return;
-        UUID uuid = player.getUUID();
+    public void onPlayerTick(TickEvent.PlayerTickEvent event) {
+        if (event.phase != TickEvent.Phase.END) return;
+        if (!(event.player instanceof EntityPlayerMP)) return;
+        
+        EntityPlayerMP player = (EntityPlayerMP) event.player;
+        UUID uuid = player.getUniqueID();
         double[] lastPos = playerLastPosition.get(uuid);
 
         if (lastPos != null) {
-            double dx = player.getX() - lastPos[0];
-            double dy = player.getY() - lastPos[1];
-            double dz = player.getZ() - lastPos[2];
+            double dx = player.posX - lastPos[0];
+            double dy = player.posY - lastPos[1];
+            double dz = player.posZ - lastPos[2];
             double distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
 
             if (distance > MOVEMENT_THRESHOLD) {
                 markPlayerActive(player);
-                lastPos[0] = player.getX();
-                lastPos[1] = player.getY();
-                lastPos[2] = player.getZ();
+                lastPos[0] = player.posX;
+                lastPos[1] = player.posY;
+                lastPos[2] = player.posZ;
             }
         }
     }
 
     @SubscribeEvent
-    public static void onPlayerLogout(PlayerEvent.PlayerLoggedOutEvent event) {
-        UUID uuid = event.getEntity().getUUID();
+    public void onPlayerLogout(PlayerEvent.PlayerLoggedOutEvent event) {
+        UUID uuid = event.player.getUniqueID();
         DataManager.getInstance().saveData();
         playerLastActivity.remove(uuid);
         playerLastPosition.remove(uuid);
-        LOGGER.info("玩家 {} 登出，已保存活跃时间数据", event.getEntity().getName().getString());
+        LOGGER.info("玩家 {} 登出，已保存活跃时间数据", event.player.getName());
     }
 
     @SubscribeEvent
-    public static void onPlayerLogin(PlayerEvent.PlayerLoggedInEvent event) {
-        if (event.getEntity() instanceof ServerPlayer player) {
-            UUID uuid = player.getUUID();
-            playerLastPosition.put(uuid, new double[]{player.getX(), player.getY(), player.getZ()});
-            LOGGER.info("玩家 {} 登录，开始追踪活跃时间", player.getName().getString());
+    public void onPlayerLogin(PlayerEvent.PlayerLoggedInEvent event) {
+        if (event.player instanceof EntityPlayerMP) {
+            EntityPlayerMP player = (EntityPlayerMP) event.player;
+            UUID uuid = player.getUniqueID();
+            playerLastPosition.put(uuid, new double[]{player.posX, player.posY, player.posZ});
+            LOGGER.info("玩家 {} 登录，开始追踪活跃时间", player.getName());
         }
     }
 
     @SubscribeEvent
-    public static void onPlayerChangedDimension(PlayerEvent.PlayerChangedDimensionEvent event) {
-        if (event.getEntity() instanceof ServerPlayer player) markPlayerActive(player);
+    public void onPlayerChangedDimension(PlayerEvent.PlayerChangedDimensionEvent event) {
+        if (event.player instanceof EntityPlayerMP) markPlayerActive((EntityPlayerMP) event.player);
     }
 
     @SubscribeEvent
-    public static void onPlayerInteract(PlayerInteractEvent.RightClickBlock event) {
-        if (event.getEntity() instanceof ServerPlayer player) markPlayerActive(player);
+    public void onPlayerInteract(net.minecraftforge.event.entity.player.PlayerInteractEvent.RightClickBlock event) {
+        if (event.getEntityPlayer() instanceof EntityPlayerMP) markPlayerActive((EntityPlayerMP) event.getEntityPlayer());
     }
 
     @SubscribeEvent
-    public static void onPlayerUseItem(PlayerInteractEvent.RightClickItem event) {
-        if (event.getEntity() instanceof ServerPlayer player) markPlayerActive(player);
+    public void onPlayerUseItem(net.minecraftforge.event.entity.player.PlayerInteractEvent.RightClickItem event) {
+        if (event.getEntityPlayer() instanceof EntityPlayerMP) markPlayerActive((EntityPlayerMP) event.getEntityPlayer());
     }
 
     @SubscribeEvent
-    public static void onPlayerAttack(AttackEntityEvent event) {
-        if (event.getEntity() instanceof ServerPlayer player) markPlayerActive(player);
+    public void onPlayerAttack(net.minecraftforge.event.entity.player.AttackEntityEvent event) {
+        if (event.getEntityPlayer() instanceof EntityPlayerMP) markPlayerActive((EntityPlayerMP) event.getEntityPlayer());
     }
 
     @SubscribeEvent
-    public static void onChatMessage(net.neoforged.neoforge.event.ServerChatEvent event) {
+    public void onChatMessage(net.minecraftforge.event.ServerChatEvent event) {
         markPlayerActive(event.getPlayer());
     }
 
-    private static void markPlayerActive(ServerPlayer player) {
-        UUID uuid = player.getUUID();
-        long currentTick = player.serverLevel().getServer().getTickCount();
+    private static void markPlayerActive(EntityPlayerMP player) {
+        UUID uuid = player.getUniqueID();
+        long currentTick = player.world.getMinecraftServer().getTickCounter();
         playerLastActivity.put(uuid, currentTick);
         PlayerActiveData data = DataManager.getInstance().getPlayerData(uuid.toString());
-        data.recordActivity(player.getName().getString(), currentTick);
+        data.recordActivity(player.getName(), currentTick);
     }
 
     @SubscribeEvent
-    public static void onServerStopped(ServerStoppedEvent event) {
+    public void onServerStopped(net.minecraftforge.fml.common.event.FMLServerStoppedEvent event) {
         DataManager.getInstance().saveData();
         LOGGER.info("服务器停止，已保存所有玩家活跃时间数据");
     }

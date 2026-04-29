@@ -2,15 +2,16 @@ package com.dsword91.playtime;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.mojang.logging.LogUtils;
-import org.slf4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 
 public class PluginConfig {
-    private static final Logger LOGGER = LogUtils.getLogger();
+    private static final Logger LOGGER = LogManager.getLogger(PluginConfig.class);
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
     private static final String CONFIG_DIR = "config";
     private static final String CONFIG_FILE = CONFIG_DIR + "/playtime_config.json";
@@ -33,14 +34,14 @@ public class PluginConfig {
     }
 
     public void loadConfig() {
-        Path configPath = Path.of(CONFIG_FILE);
+        Path configPath = Paths.get(CONFIG_FILE);
         if (!Files.exists(configPath)) {
             LOGGER.info("未找到配置文件，使用默认配置");
             saveConfig();
             return;
         }
         try {
-            String json = Files.readString(configPath);
+            String json = new String(Files.readAllBytes(configPath), "UTF-8");
             PluginConfig loaded = GSON.fromJson(json, PluginConfig.class);
             if (loaded != null) {
                 this.apiPort = loaded.apiPort;
@@ -57,11 +58,11 @@ public class PluginConfig {
 
     public void saveConfig() {
         try {
-            Path configDir = Path.of(CONFIG_DIR);
+            Path configDir = Paths.get(CONFIG_DIR);
             if (!Files.exists(configDir)) Files.createDirectories(configDir);
-            Path configPath = Path.of(CONFIG_FILE);
+            Path configPath = Paths.get(CONFIG_FILE);
             String json = GSON.toJson(this);
-            Files.writeString(configPath, json);
+            Files.write(configPath, json.getBytes("UTF-8"));
             LOGGER.info("已保存配置文件到 {}", CONFIG_FILE);
         } catch (IOException e) {
             LOGGER.error("保存配置文件失败", e);

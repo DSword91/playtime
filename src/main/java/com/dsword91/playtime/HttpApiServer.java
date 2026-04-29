@@ -2,31 +2,22 @@ package com.dsword91.playtime;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.mojang.logging.LogUtils;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.event.server.ServerStartingEvent;
-import org.slf4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.*;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.Executors;
 
-@EventBusSubscriber(modid = PlayTimeMod.MOD_ID)
 public class HttpApiServer {
-    private static final Logger LOGGER = LogUtils.getLogger();
+    private static final Logger LOGGER = LogManager.getLogger(HttpApiServer.class);
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
     private static ServerSocket serverSocket;
     private static Thread serverThread;
 
-    @SubscribeEvent
-    public static void onServerStarting(ServerStartingEvent event) {
-        PluginConfig config = PluginConfig.getInstance();
-        int port = config.getApiPort();
+    public static void startServer(int port) {
         try {
             serverSocket = new ServerSocket(port);
             serverThread = new Thread(() -> startHttpServer(serverSocket), "PlayTime-API-Server");
@@ -74,12 +65,12 @@ public class HttpApiServer {
                 if ("/playtime".equals(path) || path.startsWith("/playtime?")) {
                     handlePlaytimeRequest(out, path);
                 } else if ("/health".equals(path)) {
-                    sendJsonResponse(out, 200, Map.of("status", "ok"));
+                    sendJsonResponse(out, 200, Collections.singletonMap("status", "ok"));
                 } else {
-                    sendJsonResponse(out, 404, Map.of("error", "Not Found"));
+                    sendJsonResponse(out, 404, Collections.singletonMap("error", "Not Found"));
                 }
             } else {
-                sendJsonResponse(out, 405, Map.of("error", "Method Not Allowed"));
+                sendJsonResponse(out, 405, Collections.singletonMap("error", "Method Not Allowed"));
             }
         } catch (IOException e) {
             LOGGER.error("处理客户端请求失败", e);
@@ -99,14 +90,15 @@ public class HttpApiServer {
         List<DataManager.PlayerRanking> leaderboard = DataManager.getInstance().getLeaderboard(top);
         Map<String, Object> response = new HashMap<>();
         response.put("total_players", leaderboard.size());
-        response.put("leaderboard", leaderboard.stream()
-                .map(r -> {
-                    Map<String, Object> m = new HashMap<>();
-                    m.put("uuid", r.uuid());
-                    m.put("name", r.playerName());
-                    m.put("play_minutes", r.activeMinutes());
-                    return m;
-                }).toList());
+        List<Map<String, Object>> players = new ArrayList<>();
+        for (DataManager.PlayerRanking r : leaderboard) {
+            Map<String, Object> m = new HashMap<>();
+            m.put("uuid", r.uuid);
+            m.put("name", r.playerName);
+            m.put("play_minutes", r.activeMinutes);
+            players.add(m);
+        }
+        response.put("leaderboard", players);
 
         sendJsonResponse(out, 200, response);
     }
