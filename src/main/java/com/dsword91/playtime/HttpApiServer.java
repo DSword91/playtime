@@ -43,9 +43,11 @@ public class HttpApiServer {
     }
 
     private static void handleClient(Socket clientSocket) {
-        try (clientSocket;
-             BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream(), StandardCharsets.UTF_8));
-             PrintWriter out = new PrintWriter(new OutputStreamWriter(clientSocket.getOutputStream(), StandardCharsets.UTF_8), true)) {
+        BufferedReader in = null;
+        PrintWriter out = null;
+        try {
+            in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream(), StandardCharsets.UTF_8));
+            out = new PrintWriter(new OutputStreamWriter(clientSocket.getOutputStream(), StandardCharsets.UTF_8), true);
 
             String requestLine = in.readLine();
             if (requestLine == null || requestLine.isEmpty()) return;
@@ -74,6 +76,14 @@ public class HttpApiServer {
             }
         } catch (IOException e) {
             LOGGER.error("处理客户端请求失败", e);
+        } finally {
+            try {
+                if (in != null) in.close();
+                if (out != null) out.close();
+                if (clientSocket != null) clientSocket.close();
+            } catch (IOException e) {
+                LOGGER.error("关闭连接失败", e);
+            }
         }
     }
 
