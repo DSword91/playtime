@@ -20,15 +20,19 @@ public class ActiveTimeTracker {
     private static long saveCounter = 0;
     private static final long SAVE_INTERVAL = 6000;
 
+    private static net.minecraft.server.MinecraftServer minecraftServer;
+
     @SubscribeEvent
     public void onServerTick(TickEvent.ServerTickEvent event) {
         if (event.phase != TickEvent.Phase.END) return;
         
-        net.minecraft.server.MinecraftServer server = net.minecraft.server.MinecraftServer.getServer();
-        if (server == null) return;
-        long currentTick = server.getTickCounter();
+        if (minecraftServer == null) {
+            minecraftServer = net.minecraftforge.fml.common.FMLCommonHandler.instance().getMinecraftServerInstance();
+        }
+        if (minecraftServer == null) return;
+        long currentTick = minecraftServer.getTickCounter();
 
-        for (EntityPlayerMP player : server.getPlayerList().getPlayers()) {
+        for (EntityPlayerMP player : minecraftServer.getPlayerList().getPlayers()) {
             UUID uuid = player.getUniqueID();
             String playerName = player.getName();
             PlayerActiveData data = DataManager.getInstance().getPlayerData(uuid.toString());

@@ -87,8 +87,8 @@ public class PlayTimeCommand extends CommandBase {
     }
 
     @Override
-    public List<String> getTabCompletions(ICommandSender sender, String[] args) {
-        net.minecraft.server.MinecraftServer server = net.minecraft.server.MinecraftServer.getServer();
+    public List<String> addTabCompletionOptions(ICommandSender sender, String[] args) {
+        net.minecraft.server.MinecraftServer server = net.minecraftforge.fml.common.FMLCommonHandler.instance().getMinecraftServerInstance();
         if (server == null) return new ArrayList<>();
         
         if (args.length == 1) {
