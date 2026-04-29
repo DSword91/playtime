@@ -87,7 +87,10 @@ public class PlayTimeCommand extends CommandBase {
     }
 
     @Override
-    public List<String> getTabCompletions(MinecraftServer server, ICommandSender sender, String[] args) {
+    public List<String> getTabCompletions(ICommandSender sender, String[] args) {
+        net.minecraft.server.MinecraftServer server = net.minecraft.server.MinecraftServer.getServer();
+        if (server == null) return new ArrayList<>();
+        
         if (args.length == 1) {
             List<String> completions = new ArrayList<>();
             completions.add("leaderboard");

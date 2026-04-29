@@ -24,7 +24,8 @@ public class ActiveTimeTracker {
     public void onServerTick(TickEvent.ServerTickEvent event) {
         if (event.phase != TickEvent.Phase.END) return;
         
-        var server = event.getServer();
+        net.minecraft.server.MinecraftServer server = net.minecraft.server.MinecraftServer.getServer();
+        if (server == null) return;
         long currentTick = server.getTickCounter();
 
         for (EntityPlayerMP player : server.getPlayerList().getPlayers()) {

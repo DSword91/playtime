@@ -30,7 +30,7 @@ public class HttpApiServer {
     }
 
     private static void startHttpServer(ServerSocket socket) {
-        var executor = Executors.newCachedThreadPool();
+        java.util.concurrent.ExecutorService executor = Executors.newCachedThreadPool();
         while (!socket.isClosed()) {
             try {
                 Socket clientSocket = socket.accept();
@@ -120,7 +120,7 @@ public class HttpApiServer {
         String query = path.substring(queryStart + 1);
         for (String pair : query.split("&")) {
             String[] kv = pair.split("=");
-            if (kv.length == 2) params.put(kv[0], URLDecoder.decode(kv[1], StandardCharsets.UTF_8));
+            if (kv.length == 2) params.put(kv[0], URLDecoder.decode(kv[1], "UTF-8"));
         }
         return params;
     }

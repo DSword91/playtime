@@ -33,12 +33,12 @@ public class PlayTimeMod {
     }
 
     @Mod.EventHandler
-    public void serverStarting(FMLServerStartingEvent event) {
+    public void serverStarting(net.minecraftforge.fml.common.event.FMLServerStartingEvent event) {
         PluginConfig config = PluginConfig.getInstance();
         HttpApiServer.startServer(config.getApiPort());
         logger.info("HTTP API 服务器已启动在端口 {}", config.getApiPort());
         
-        event.registerCommand(new PlayTimeCommand());
+        event.registerServerCommand(new PlayTimeCommand());
         logger.info("PlayTime 命令已注册");
     }
 }
