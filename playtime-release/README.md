@@ -1,6 +1,12 @@
 # PlayTime - Minecraft 玩家活跃时间追踪模组
 
-一个轻量级的 NeoForge 1.21.1 模组，用于追踪玩家的**活跃游戏时间**（排除挂机/空闲时间）。
+**版本**: Forge 1.12.2 (CatRoom/Cleanroom)
+
+一个轻量级的 Forge 1.12.2 模组，用于追踪玩家的**活跃游戏时间**（排除挂机/空闲时间）。
+
+> **注意**: 此版本适用于 Minecraft 1.12.2 + CatRoom/Cleanroom/Forge
+> 
+> 如需 NeoForge 1.21.1 版本，请查看 main 分支
 
 ## 功能特性
 
@@ -17,7 +23,7 @@
 
 ## 安装方法
 
-1. 在服务器上安装 **NeoForge 1.21.1**
+1. 在服务器上安装 **CatRoom/Cleanroom/Forge 1.12.2**
 2. 将 `playtime-1.0.0.jar` 放入服务器的 `mods` 文件夹
 3. 启动服务器
 4. 配置文件将自动生成在 `config/playtime_config.json`
@@ -88,9 +94,21 @@ GET http://localhost:25002/health
 
 ## 从源码构建
 
+### 环境要求
+- **JDK 8** (推荐 Zulu 8 或 AdoptOpenJDK 8)
+- Gradle 8.x
+
+### 编译步骤
+
 ```bash
 git clone https://github.com/DSword91/playtime.git
 cd playtime
+git checkout feature/1.12.2-catroom-migration
+
+# Windows (使用 Java 8)
+& 'C:\Program Files\Java\zulu8.80.0.17-ca-jdk8.0.422-win_x64\bin\java.exe' -classpath gradle\wrapper\gradle-wrapper.jar org.gradle.wrapper.GradleWrapperMain build --no-daemon
+
+# Linux/Mac (确保 JAVA_HOME 指向 Java 8)
 ./gradlew build
 ```
 
