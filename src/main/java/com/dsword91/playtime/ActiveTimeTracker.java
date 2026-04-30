@@ -15,9 +15,11 @@ public class ActiveTimeTracker {
     private static final Logger LOGGER = LogManager.getLogger(ActiveTimeTracker.class);
     private static final Map<UUID, Long> playerLastActivity = new HashMap<>();
     private static final Map<UUID, double[]> playerLastPosition = new HashMap<>();
-    private static final long AFK_THRESHOLD = 100;
+    // AFK 阈值：200 ticks = 10 秒
+    private static final long AFK_THRESHOLD = 200;
     private static final double MOVEMENT_THRESHOLD = 0.1;
     private static long saveCounter = 0;
+    // 保存间隔：6000 ticks = 5 分钟
     private static final long SAVE_INTERVAL = 6000;
 
     private static net.minecraft.server.MinecraftServer minecraftServer;
@@ -32,23 +34,28 @@ public class ActiveTimeTracker {
         if (minecraftServer == null) return;
         long currentTick = minecraftServer.getTickCounter();
 
+        // 优化：只在需要保存时才遍历所有玩家
+        boolean needSave = (++saveCounter >= SAVE_INTERVAL);
+        
         for (EntityPlayerMP player : minecraftServer.getPlayerList().getPlayers()) {
             UUID uuid = player.getUniqueID();
-            String playerName = player.getName();
             PlayerActiveData data = DataManager.getInstance().getPlayerData(uuid.toString());
-            data.setPlayerName(playerName);
+            
+            // 优化：只在必要时更新玩家名称
+            if (!player.getName().equals(data.getPlayerName())) {
+                data.setPlayerName(player.getName());
+            }
 
             Long lastActivity = playerLastActivity.get(uuid);
             if (lastActivity != null && (currentTick - lastActivity) <= AFK_THRESHOLD) {
-                data.recordActivity(playerName, currentTick);
+                data.recordActivity(player.getName(), currentTick);
             } else {
                 data.setWasActive(false);
             }
             data.updateActiveTime(currentTick);
         }
 
-        saveCounter++;
-        if (saveCounter >= SAVE_INTERVAL) {
+        if (needSave) {
             DataManager.getInstance().periodicSave();
             saveCounter = 0;
         }
@@ -122,6 +129,11 @@ public class ActiveTimeTracker {
         markPlayerActive(event.getPlayer());
     }
 
+    @SubscribeEvent
+    public void onPlayerInteractAtEntity(net.minecraftforge.event.entity.player.PlayerInteractEvent.EntityInteract event) {
+        if (event.getEntityPlayer() instanceof EntityPlayerMP) markPlayerActive((EntityPlayerMP) event.getEntityPlayer());
+    }
+
     private static void markPlayerActive(EntityPlayerMP player) {
         UUID uuid = player.getUniqueID();
         long currentTick = player.world.getMinecraftServer().getTickCounter();
@@ -130,9 +142,5 @@ public class ActiveTimeTracker {
         data.recordActivity(player.getName(), currentTick);
     }
 
-    @SubscribeEvent
-    public void onServerStopped(net.minecraftforge.fml.common.event.FMLServerStoppedEvent event) {
-        DataManager.getInstance().saveData();
-        LOGGER.info("服务器停止，已保存所有玩家活跃时间数据");
-    }
+
 }

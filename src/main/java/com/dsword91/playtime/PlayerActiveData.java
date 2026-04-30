@@ -6,7 +6,7 @@ public class PlayerActiveData {
     private long lastActivityTick = 0;
     private boolean wasActive = false;
 
-    private static final int AFK_THRESHOLD_TICKS = 100;
+    private static final int AFK_THRESHOLD_TICKS = 200;  // 10 秒
     private static final int TICKS_PER_MINUTE = 1200;
 
     public PlayerActiveData() {}
