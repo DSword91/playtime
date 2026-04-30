@@ -5,8 +5,10 @@ import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextComponentString;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,6 +21,11 @@ public class PlayTimeCommand extends CommandBase {
     @Override
     public String getUsage(ICommandSender sender) {
         return "/playtime [player] [leaderboard <top>]";
+    }
+
+    // 权限等级：0 = 所有玩家可用
+    public int getRequiredPermissionLevel() {
+        return 0; // 0 = 所有玩家都可以使用
     }
 
     @Override
@@ -86,8 +93,8 @@ public class PlayTimeCommand extends CommandBase {
         return hours > 0 ? hours + "小时" + mins + "分" : mins + "分钟";
     }
 
-    public List<String> addTabCompletionOptions(ICommandSender sender, String[] args) {
-        net.minecraft.server.MinecraftServer server = net.minecraftforge.fml.common.FMLCommonHandler.instance().getMinecraftServerInstance();
+    // Tab 补全方法 - Forge 1.12.2
+    public List<String> getTabCompletionOptions(MinecraftServer server, ICommandSender sender, String[] args, @Nullable BlockPos pos) {
         if (server == null) return new ArrayList<>();
         
         if (args.length == 1) {
@@ -96,7 +103,7 @@ public class PlayTimeCommand extends CommandBase {
             for (EntityPlayerMP player : server.getPlayerList().getPlayers()) {
                 completions.add(player.getName());
             }
-            return getListOfStringsMatchingLastWord(args, completions.toArray(new String[0]));
+            return getListOfStringsMatchingLastWord(args, completions);
         } else if (args.length == 2 && args[0].equals("leaderboard")) {
             return getListOfStringsMatchingLastWord(args, "10", "20", "50", "100");
         }
