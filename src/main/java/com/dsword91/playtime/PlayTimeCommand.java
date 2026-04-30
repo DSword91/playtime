@@ -28,6 +28,11 @@ public class PlayTimeCommand extends CommandBase {
         return 0; // 0 = 所有玩家都可以使用
     }
 
+    // 权限检查：允许所有发送者使用此命令
+    public boolean canCommandSenderUseCommand(ICommandSender sender) {
+        return true; // 所有玩家和控制台都可以使用
+    }
+
     @Override
     public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException {
         if (args.length == 0) {
